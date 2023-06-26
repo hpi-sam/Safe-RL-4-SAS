@@ -77,10 +77,12 @@ def run():
     done = False
     while not done:
         action, _states = model.predict(obs, state)
+        print(action)
         next_obs, reward, terminated, truncated, state = env.step(action)
+        env.render()
         done = terminated or truncated
 
 
 if __name__ == "__main__":
-    train()
-    # run()
+    # train()
+    run()

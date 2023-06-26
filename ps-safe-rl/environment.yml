@@ -1,0 +1,7 @@
+name: ps-safe-rl
+channels:
+  - defaults
+dependencies:
+  - python=3.8
+  - gymnasium=0.26.3
+prefix: /Users/finn/miniconda3/envs/ps-safe-rl
