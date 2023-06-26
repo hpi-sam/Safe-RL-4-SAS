@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- generated on 2023-06-17 17:12:37 by Eclipse SUMO netedit Version 1.17.0
+-->
+
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/routes_file.xsd">
+    <vType id="vt_se" jmIgnoreFoeProb="1" jmIgnoreJunctionFoeProb="1"/>
+
+    <route id="r_se" edges="E2 E1"/>
+    <route id="r_sn" edges="E2 E3"/>
+    <route id="r_we" edges="E0 E1"/>
+
+    <flow id="se_0" route="r_se" begin="0" end="3600" probability="0.1" departPos="free" type="vt_se"/>
+    <flow id="sn_0" route="r_sn" begin="0" end="3600" probability="0.1" departPos="free"/>
+    <flow id="we_0" route="r_we" begin="0" end="3600" probability="0.1" departPos="free"/>
+</routes>
