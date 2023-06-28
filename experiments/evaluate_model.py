@@ -1,7 +1,7 @@
 import os
 import sys
 
-from stable_baselines3 import A2C, DQN
+from stable_baselines3 import A2C, DQN, PPO
 from sumo_rl import SumoEnvironment
 
 if "SUMO_HOME" in os.environ:
@@ -30,12 +30,14 @@ def run(name, delay=0):
 
     model_file = f'models/{name}.zip'
 
-    if name == 'a2c':
+    if name == 'a2c' or name == 'a2c_collision':
         model = A2C.load(model_file, env=env)
     elif name == 'dqn':
         model = DQN.load(model_file, env=env)
+    elif name == 'ppo':
+        model = PPO.load(model_file, env=env)
     else:
-        model = A2C.load(model_file, env=env)
+        raise ValueError(f'Model "{name}" unknown')
 
     obs, _info = env.reset()
     traci.gui.setOffset(traci.gui.DEFAULT_VIEW, x=125, y=100)
@@ -58,5 +60,7 @@ def run(name, delay=0):
 
 
 if __name__ == '__main__':
-    run('a2c', 50)
+    # run('a2c', 50)
     # run('dqn', 50)
+    # run('ppo', 50)
+    run('a2c_collision', 50)
