@@ -12,7 +12,21 @@ else:
 import traci
 
 
-def run(name, delay=0):
+def shield(obs, action):
+    # action == 2 is potentially unsafe, action == 1 is always safe
+    if action == 2:
+        vehicles_on_main_road = traci.lane.getLastStepVehicleIDs('E0_0')
+        for vehicle in vehicles_on_main_road:
+            position = traci.vehicle.getPosition(vehicle)
+            if position[0] > 0:  # there is a car about to cross the junction
+                return 1  # safe action
+    return action
+
+
+def run(name, delay=0, shielded=False):
+    print("Running", name)
+    collisions = 0
+
     additional_sumo_cmd = ['--d', str(delay)]
     # additional_sumo_cmd.extend(["--tripinfo-output", "data/dqn_simple_intersection/tripinfo.xml"])
     # additional_sumo_cmd.extend(["--collision-output", "data/dqn_simple_intersection/collision.xml"])
@@ -45,22 +59,29 @@ def run(name, delay=0):
 
     done = False
     while not done:
+        # print(obs)
         action, _states = model.predict(obs, deterministic=True)
+        if shielded:
+            action = shield(obs, action)
         obs, reward, terminated, truncated, info = env.step(action)
         env.render()
 
         current_collisions = traci.simulation.getCollisions()
         if current_collisions:
             print(current_collisions)
+            collisions += len(current_collisions)
 
         if info['step'] == 500:
             print(info)
             pass
         done = terminated or truncated
 
+    return collisions
+
 
 if __name__ == '__main__':
-    # run('a2c', 50)
-    # run('dqn', 50)
-    # run('ppo', 50)
-    run('a2c_collision', 50)
+    # print('Collisions: ', run('a2c', 100))
+    # print('Collisions: ', run('dqn', 0))
+    # print('Collisions: ', run('ppo', 0))
+    # print('Collisions: ', run('a2c_collision', 100))
+    print('Collisions: ', run('a2c', 100, shielded=True))
