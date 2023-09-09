@@ -15,12 +15,14 @@ else:
 import traci
 
 
-current_collision=0
+current_collisions=0
 
 collision_limit=25
 
 def collision_penalty_reward(traffic_signal: sumo_rl.TrafficSignal):
-    #collisions = traci.simulation.getCollisions()
+    if traci.simulation.getCollisions():
+        current_collisions++
+        
     if current_collisions>=collision_limit:
         return -1
         
