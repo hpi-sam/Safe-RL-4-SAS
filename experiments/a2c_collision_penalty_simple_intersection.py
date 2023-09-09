@@ -14,18 +14,17 @@ else:
     sys.exit("Please declare the environment variable 'SUMO_HOME'")
 import traci
 
+current_collisions = 0
+collision_limit = 25
 
-current_collisions=0
-
-collision_limit=25
 
 def collision_penalty_reward(traffic_signal: sumo_rl.TrafficSignal):
-    if traci.simulation.getCollisions():
-        current_collisions++
-        
-    if current_collisions>=collision_limit:
-        return -1
-        
+    collisions = traci.simulation.getCollisions()
+    if collisions:
+        current_collisions += 1
+        if current_collisions >= collision_limit:
+            return -1
+
     ts_wait = sum(traffic_signal.get_accumulated_waiting_time_per_lane()) / 100.0
     reward = traffic_signal.last_measure - ts_wait
     traffic_signal.last_measure = ts_wait
