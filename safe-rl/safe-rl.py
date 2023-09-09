@@ -35,7 +35,7 @@ class Simulation:
         traci.gui.setZoom(traci.gui.DEFAULT_VIEW, 350)
 
         step = 0
-        duration = 3600
+        duration = 10000
 
         while step < duration:
             traci.simulationStep()

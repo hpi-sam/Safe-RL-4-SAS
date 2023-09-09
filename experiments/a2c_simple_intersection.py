@@ -21,12 +21,12 @@ def train(steps=36000):
 
     env = SumoEnvironment(
         net_file="nets/simple_intersection/simple_intersection.net.xml",
-        route_file="nets/simple_intersection/simple_intersection.rou.xml",
+        route_file="nets/simple_intersection/simple_intersection_dynamic.rou.xml",
         out_csv_name="outputs/simple_intersection/a2c",
         single_agent=True,
         use_gui=False,
         sumo_warnings=False,
-        num_seconds=3600,
+        num_seconds=10000,
         additional_sumo_cmd="--collision.check-junctions"
     )
 
@@ -42,4 +42,4 @@ def train(steps=36000):
 
 
 if __name__ == "__main__":
-    train(36000)
+    train(100000)

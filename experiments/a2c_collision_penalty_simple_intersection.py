@@ -18,7 +18,7 @@ import traci
 def collision_penalty_reward(traffic_signal: sumo_rl.TrafficSignal):
     collisions = traci.simulation.getCollisions()
     if collisions:
-        return -100
+        return -1
     ts_wait = sum(traffic_signal.get_accumulated_waiting_time_per_lane()) / 100.0
     reward = traffic_signal.last_measure - ts_wait
     traffic_signal.last_measure = ts_wait
@@ -50,8 +50,8 @@ def train(steps=36000):
     )
     model.learn(total_timesteps=steps)
 
-    model.save('models/a2c_collision')
+    model.save('models/a2c_collision_100000')
 
 
 if __name__ == "__main__":
-    train(36000)
+    train(100000)

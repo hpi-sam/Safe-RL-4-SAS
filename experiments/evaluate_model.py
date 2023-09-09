@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 
 from stable_baselines3 import A2C, DQN, PPO
 from sumo_rl import SumoEnvironment
@@ -34,11 +35,11 @@ def run(name, delay=0, shielded=False):
 
     env = SumoEnvironment(
         net_file="nets/simple_intersection/simple_intersection.net.xml",
-        route_file="nets/simple_intersection/simple_intersection.rou.xml",
+        route_file="nets/simple_intersection/simple_intersection_dynamic.rou.xml",
         single_agent=True,
         use_gui=True,
         sumo_warnings=True,
-        num_seconds=3600,
+        num_seconds=10000,
         additional_sumo_cmd=' '.join(additional_sumo_cmd)
     )
 
@@ -57,6 +58,8 @@ def run(name, delay=0, shielded=False):
     traci.gui.setOffset(traci.gui.DEFAULT_VIEW, x=125, y=100)
     traci.gui.setZoom(traci.gui.DEFAULT_VIEW, 350)
 
+    overwrite_action = False
+
     done = False
     while not done:
         # print(obs)
@@ -71,17 +74,21 @@ def run(name, delay=0, shielded=False):
             print(current_collisions)
             collisions += len(current_collisions)
 
-        if info['step'] == 500:
-            print(info)
+        if info['step'] == 1990:
             pass
         done = terminated or truncated
 
-    return collisions
+    return {'Collisions': collisions}
 
 
 if __name__ == '__main__':
-    # print('Collisions: ', run('a2c', 100))
-    # print('Collisions: ', run('dqn', 0))
-    # print('Collisions: ', run('ppo', 0))
-    # print('Collisions: ', run('a2c_collision', 100))
-    print('Collisions: ', run('a2c', 100, shielded=True))
+    models = ['a2c', 'dqn', 'ppo', 'a2c_collision', 'a2c_shielded']
+    results = {}
+    for model in models:
+        if "shielded" not in model:
+            results[model] = run(model)
+        else:
+            results[model] = run(model, shielded=True)
+        time.sleep(3)
+    print(results)
+
