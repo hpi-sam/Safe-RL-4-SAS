@@ -22,9 +22,7 @@ def shield(obs, action, shield_distance):
         if vehicles_on_main_road:
             position = traci.vehicle.getPosition(vehicles_on_main_road[0])[0]
             distance = abs(x_position_junction - position)
-            print(f'Car at {position} with junction at {x_position_junction}: Distance = {distance}')
             if distance <= shield_distance:
-                print("DANGER!")
                 return 1  # safe action
     return action
 
@@ -64,10 +62,6 @@ def run(name, delay=0, shield_distance=0):
     traci.gui.setZoom(traci.gui.DEFAULT_VIEW, 350)
 
     speed_limits = {id: traci.lane.getMaxSpeed(id) for id in traci.lane.getIDList()}
-    for id in traci.lane.getIDList():
-        print(f'Lane {id} speed limit: {traci.lane.getMaxSpeed(id)}')
-
-    overwrite_action = False
 
     done = False
     while not done:
@@ -90,33 +84,19 @@ def run(name, delay=0, shield_distance=0):
 
 
 if __name__ == '__main__':
-    models = ['a2c', 'dqn', 'ppo', 'a2c_collision', 'a2c_shielded']
-    models = ['a2c_shielded']
-    results = {}
-    for model in models:
-        print(f"=================================================================\nEVALUATING MODEL {model}")
-        filename = model
-        if "shielded" not in model:
-            results[model] = run(model)
-        else:
-            model_name = model.replace("_shielded", "")
-            shields = range(0, 106, 7)  # 13.89 is speed limit of lanes, half of that rounded up = 7
-            for shield_distance in shields:
-                filename = f'{model}_{shield_distance}'
-                result = run(model_name, shield_distance=shield_distance)
+    model = sys.argv[1]
+    filename = sys.argv[2]
+    shield_distance = int(sys.argv[3])
 
-                with open(f'./results/{filename}.json', 'w') as fp:
-                    json_content = [{
-                        'collider': collision.collider,
-                        'victim': collision.victim,
-                        'colliderSpeed': collision.colliderSpeed,
-                        'victimSpeed': collision.victimSpeed} for collision in result]
-                    fp.write(json.dumps(json_content, indent=4))
+    print(f"=================================================================\nEVALUATING MODEL {model} WITH SHIELD_DISTANCE {shield_distance}")
+    result = run(model, shield_distance=shield_distance)
 
-        time.sleep(1)
-        try:
-            traci.close()
-        except Exception:
-            print("Traci already closed")
-        time.sleep(1)
+    with open(f'./results/{filename}.json', 'w') as fp:
+        json_content = [{
+            'collider': collision.collider,
+            'victim': collision.victim,
+            'colliderSpeed': collision.colliderSpeed,
+            'victimSpeed': collision.victimSpeed} for collision in result]
+        fp.write(json.dumps(json_content, indent=4))
+
     print('DONE')

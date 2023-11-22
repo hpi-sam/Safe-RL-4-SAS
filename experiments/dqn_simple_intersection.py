@@ -14,7 +14,7 @@ else:
 import traci
 
 
-def train(steps=100000):
+def train(steps):
     filelist = glob.glob(os.path.join('outputs', 'simple_intersection', "*.csv"))
     for f in filelist:
         os.remove(f)
@@ -43,8 +43,8 @@ def train(steps=100000):
     )
     model.learn(total_timesteps=steps)
 
-    model.save('models/dqn')
+    model.save('models/dqn_1000000_night')
 
 
 if __name__ == "__main__":
-    train(100000)
+    train(1000000)

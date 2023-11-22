@@ -19,6 +19,7 @@ collision_limit = 25
 
 
 def collision_penalty_reward(traffic_signal: sumo_rl.TrafficSignal):
+    global current_collisions
     collisions = traci.simulation.getCollisions()
     if collisions:
         current_collisions += 1
@@ -56,7 +57,7 @@ def train(steps=36000):
     )
     model.learn(total_timesteps=steps)
 
-    model.save('models/a2c_collision_100000')
+    model.save('models/a2c_collision_limit_100000')
 
 
 if __name__ == "__main__":

@@ -38,8 +38,8 @@ def train(steps=36000):
     )
     model.learn(total_timesteps=steps)
 
-    model.save('models/ppo')
+    model.save('models/ppo_test')
 
 
 if __name__ == "__main__":
-    train(36000)
+    train(1000)

@@ -38,8 +38,8 @@ def train(steps=36000):
     )
     model.learn(total_timesteps=steps)
 
-    model.save('models/a2c')
+    model.save('models/a2c_1000000_night')
 
 
 if __name__ == "__main__":
-    train(100000)
+    train(1000000)
