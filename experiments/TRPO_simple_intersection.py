@@ -3,7 +3,7 @@ import os
 import sys
 
 import gymnasium as gym
-from stable_baselines3 import A2C
+from sb3_contrib import TRPO
 from sumo_rl import SumoEnvironment
 
 if "SUMO_HOME" in os.environ:
@@ -14,7 +14,7 @@ else:
 import traci
 
 
-def train(steps=36000):
+def train(steps):
     filelist = glob.glob(os.path.join('outputs', 'simple_intersection', "*.csv"))
     for f in filelist:
         os.remove(f)
@@ -22,7 +22,7 @@ def train(steps=36000):
     env = SumoEnvironment(
         net_file="nets/simple_intersection/simple_intersection.net.xml",
         route_file="nets/simple_intersection/simple_intersection_dynamic.rou.xml",
-        out_csv_name="outputs/simple_intersection/a2c",
+        out_csv_name="outputs/simple_intersection/dqn",
         single_agent=True,
         use_gui=False,
         sumo_warnings=False,
@@ -30,7 +30,7 @@ def train(steps=36000):
         additional_sumo_cmd="--collision.check-junctions"
     )
 
-    model = A2C(
+    model = TRPO(
         env=env,
         policy="MlpPolicy",
         learning_rate=0.001,
@@ -38,7 +38,7 @@ def train(steps=36000):
     )
     model.learn(total_timesteps=steps)
 
-    model.save('models/debug')
+    model.save('models/trpo')
 
 
 if __name__ == "__main__":

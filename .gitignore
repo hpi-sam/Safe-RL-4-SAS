@@ -1,6 +1,6 @@
 .DS_Store
 .idea/
-data/
-models/
-outputs/
-results/
+data/*
+models/*
+outputs/simple_intersection/*
+results/*

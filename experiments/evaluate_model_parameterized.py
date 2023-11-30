@@ -3,6 +3,7 @@ import os
 import sys
 import time
 
+from sb3_contrib import TRPO
 from stable_baselines3 import A2C, DQN, PPO
 from sumo_rl import SumoEnvironment
 
@@ -27,17 +28,22 @@ def shield(obs, action, shield_distance):
     return action
 
 
-def run(name, delay=0, shield_distance=0):
+def run(name, delay=0, shield_distance=0, file_name='', speed_limit=50):
     print("Running", name)
     collisions = []
 
+    if not file_name:
+        file_name = name
+
     additional_sumo_cmd = ['--d', str(delay)]
-    # additional_sumo_cmd.extend(["--tripinfo-output", "data/dqn_simple_intersection/tripinfo.xml"])
-    # additional_sumo_cmd.extend(["--collision-output", "data/dqn_simple_intersection/collision.xml"])
+    additional_sumo_cmd.extend(['--duration-log.statistics'])
+    additional_sumo_cmd.extend([f'--statistic-output results/{file_name}.statistics.xml'])
+    additional_sumo_cmd.extend([f"--tripinfo-output results/{file_name}.tripinfo.xml"])
+    additional_sumo_cmd.extend([f"--collision-output results/{file_name}.collision.xml"])
     additional_sumo_cmd.extend(["--collision.check-junctions"])
 
     env = SumoEnvironment(
-        net_file="nets/simple_intersection/simple_intersection.net.xml",
+        net_file=f"nets/simple_intersection/simple_intersection_{speed_limit}.net.xml",
         route_file="nets/simple_intersection/simple_intersection_dynamic.rou.xml",
         single_agent=True,
         use_gui=True,
@@ -54,6 +60,8 @@ def run(name, delay=0, shield_distance=0):
         model = DQN.load(model_file, env=env)
     elif name == 'ppo':
         model = PPO.load(model_file, env=env)
+    elif name == 'trpo':
+        model = TRPO.load(model_file, env=env)
     else:
         raise ValueError(f'Model "{name}" unknown')
 
@@ -87,9 +95,10 @@ if __name__ == '__main__':
     model = sys.argv[1]
     filename = sys.argv[2]
     shield_distance = int(sys.argv[3])
+    speed_limit = int(sys.argv[4])
 
     print(f"=================================================================\nEVALUATING MODEL {model} WITH SHIELD_DISTANCE {shield_distance}")
-    result = run(model, shield_distance=shield_distance)
+    result = run(model, shield_distance=shield_distance, file_name=filename, speed_limit=speed_limit)
 
     with open(f'./results/{filename}.json', 'w') as fp:
         json_content = [{
