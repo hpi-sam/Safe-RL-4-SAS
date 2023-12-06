@@ -14,15 +14,12 @@ else:
 import traci
 
 
-def train(steps=36000):
-    filelist = glob.glob(os.path.join('outputs', 'simple_intersection', "*.csv"))
-    for f in filelist:
-        os.remove(f)
+def train(steps=100000, speed_limit=50):
 
     env = SumoEnvironment(
-        net_file="nets/simple_intersection/simple_intersection.net.xml",
+        net_file=f"nets/simple_intersection/simple_intersection_{speed_limit}.net.xml",
         route_file="nets/simple_intersection/simple_intersection_dynamic.rou.xml",
-        out_csv_name="outputs/simple_intersection/a2c",
+        out_csv_name=f"outputs/simple_intersection/a2c_{speed_limit}",
         single_agent=True,
         use_gui=False,
         sumo_warnings=False,
@@ -38,8 +35,9 @@ def train(steps=36000):
     )
     model.learn(total_timesteps=steps)
 
-    model.save('models/debug')
+    model.save(f'models/a2c_{speed_limit}_100000')
 
 
 if __name__ == "__main__":
-    train(100000)
+    speed = sys.argv[1]
+    train(100000, int(speed))

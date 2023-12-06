@@ -97,6 +97,9 @@ if __name__ == '__main__':
     shield_distance = int(sys.argv[3])
     speed_limit = int(sys.argv[4])
 
+    if not os.path.exists('results'):
+        os.makedirs('results')
+
     print(f"=================================================================\nEVALUATING MODEL {model} WITH SHIELD_DISTANCE {shield_distance}")
     result = run(model, shield_distance=shield_distance, file_name=filename, speed_limit=speed_limit)
 

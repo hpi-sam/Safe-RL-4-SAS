@@ -14,19 +14,16 @@ else:
 import traci
 
 
-def train(steps):
-    filelist = glob.glob(os.path.join('outputs', 'simple_intersection', "*.csv"))
-    for f in filelist:
-        os.remove(f)
+def train(steps, speed_limit):
 
     env = SumoEnvironment(
-        net_file="nets/simple_intersection/simple_intersection.net.xml",
-        route_file="nets/simple_intersection/simple_intersection.rou.xml",
-        out_csv_name="outputs/simple_intersection/dqn",
+        net_file=f"nets/simple_intersection/simple_intersection_{speed_limit}.net.xml",
+        route_file="nets/simple_intersection/simple_intersection_dynamic.rou.xml",
+        out_csv_name=f"outputs/simple_intersection/dqn_{speed_limit}",
         single_agent=True,
         use_gui=False,
         sumo_warnings=False,
-        num_seconds=3600,
+        num_seconds=10000,
         additional_sumo_cmd="--collision.check-junctions"
     )
 
@@ -34,17 +31,13 @@ def train(steps):
         env=env,
         policy="MlpPolicy",
         learning_rate=0.001,
-        learning_starts=0,
-        train_freq=1,
-        target_update_interval=500,
-        exploration_initial_eps=0.05,
-        exploration_final_eps=0.01,
         verbose=1,
     )
     model.learn(total_timesteps=steps)
 
-    model.save('models/dqn_1000000_night')
+    model.save(f'models/dqn_{speed_limit}_100000')
 
 
 if __name__ == "__main__":
-    train(1000000)
+    speed_limit = sys.argv[1]
+    train(100000, int(speed_limit))
