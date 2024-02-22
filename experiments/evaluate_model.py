@@ -40,7 +40,7 @@ def run(name, delay=0, shield_distance=0):
 
     env = SumoEnvironment(
         net_file="nets/simple_intersection/simple_intersection.net.xml",
-        route_file="nets/simple_intersection/simple_intersection_dynamic.rou.xml",
+        route_file="nets/simple_intersection/evaluation_routes/simple_intersection_[2_0.5_1.2].rou.xml",
         single_agent=True,
         use_gui=True,
         sumo_warnings=True,
@@ -49,6 +49,7 @@ def run(name, delay=0, shield_distance=0):
     )
 
     model_file = f'models/{name}.zip'
+    model_file = f'models/{name}_50_100000.zip'
 
     if 'a2c_collision' in name or name == 'a2c':
         model = A2C.load(model_file, env=env)
@@ -81,6 +82,7 @@ def run(name, delay=0, shield_distance=0):
         current_collisions = traci.simulation.getCollisions()
         if current_collisions:
             collisions.extend(current_collisions)
+            print(current_collisions)
 
         if info['step'] == 1990:
             pass
@@ -91,13 +93,14 @@ def run(name, delay=0, shield_distance=0):
 
 if __name__ == '__main__':
     models = ['a2c', 'dqn', 'ppo', 'a2c_collision', 'a2c_shielded']
-    models = ['a2c_shielded']
+    models = ['a2c']
     results = {}
     for model in models:
         print(f"=================================================================\nEVALUATING MODEL {model}")
         filename = model
         if "shielded" not in model:
             results[model] = run(model)
+            print(len(results[model]))
         else:
             model_name = model.replace("_shielded", "")
             shields = range(0, 106, 7)  # 13.89 is speed limit of lanes, half of that rounded up = 7

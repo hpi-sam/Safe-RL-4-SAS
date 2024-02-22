@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/routes_file.xsd">
+    <vType id="vt_se" jmIgnoreFoeProb="1" jmIgnoreJunctionFoeProb="1"/>
+
+    <route id="r_se" edges="E2 E1"/>
+    <route id="r_sn" edges="E2 E3"/>
+    <route id="r_we" edges="E0 E1"/>
+
+    <flow id="we_0" route="r_we" begin="0" end="10000" probability="0.266" departPos="free"/>
+    <flow id="sn_0" route="r_sn" begin="0" end="10000" probability="0.0175" departPos="free"/>
+    <flow id="se_0" route="r_se" begin="0" end="10000" probability="0.0665" departPos="free" type="vt_se"/>
+</routes>
