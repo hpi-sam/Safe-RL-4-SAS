@@ -14,7 +14,7 @@ for experiment in folders:
     statistics_files = glob.glob(f'{experiment}/*.statistics.xml')
     experiment_data = []
 
-    for statistics_file in statistics_files[0:2:]:
+    for statistics_file in statistics_files:
         data = {'index': int(str(statistics_file.split('/')[-1].split('.')[0]))}
 
         collision_file = statistics_file.replace('statistics.xml', 'collision.xml')
@@ -38,11 +38,11 @@ for experiment in folders:
         data['emergency_brakes'] = emergency_brakes
 
         experiment_data.append(data)
-        print(data)
+        # print(data)
 
     df = pd.DataFrame(experiment_data)
     df.set_index('index', inplace=True)
     df.sort_index(inplace=True)
 
     df.to_csv(f'{experiment}/summary.csv')
-    print(df)
+    # print(df)
