@@ -26,7 +26,10 @@ for experiment in folders:
 
         rear_end_collisions = sum('se' in child.attrib.get('victim') for child in collision_root)
         total_collisions = int(statistics_root.find('safety').attrib.get('collisions'))
-        emergency_brakes = int(statistics_root.find('safety').attrib.get('emergencyBraking'))
+        try:
+            emergency_brakes = int(statistics_root.find('safety').attrib.get('emergencyBraking'))
+        except TypeError as e:
+            emergency_brakes = 0
         for value in statistics_root.find('vehicleTripStatistics').attrib:
             if value != 'count':
                 data[value] = float(statistics_root.find('vehicleTripStatistics').attrib.get(value))

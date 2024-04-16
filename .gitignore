@@ -10,3 +10,4 @@ results/*
 /.ipynb_checkpoints/
 /graphs/
 /results_safe_rl_report/
+/*.zip
