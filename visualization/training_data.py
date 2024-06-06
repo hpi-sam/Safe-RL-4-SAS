@@ -3,6 +3,7 @@ import os
 
 import matplotlib.pyplot as plt
 import pandas as pd
+import seaborn as sns
 
 output_files = glob.glob('./outputs/simple_intersection/*')
 output_file_name_arrays = [os.path.basename(file_path).split('_') for file_path in output_files]
@@ -18,7 +19,7 @@ for model in models:
         model_data_frame.loc[index, 'episode'] = index + 1
         model_data_frame.loc[index, 'mean_total_waiting_time'] = df['system_total_waiting_time'].mean()
 
-    model_data_frame.plot.scatter(x='episode', y='mean_total_waiting_time')
+    sns.scatterplot(x='episode', y='mean_total_waiting_time', data=model_data_frame)
     plt.title(model)
-    plt.savefig(f'./visualization/training_plots/{model}.png')
+    # plt.savefig(f'./visualization/training_plots/{model}.png')
     plt.show()
