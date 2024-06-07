@@ -2,12 +2,14 @@
 "
 Causal discovery using Constraint-Based Algorithms 
 
-speed [exogenous];
-shield [exogenous];
-algorithm [exogenous]
-lateral_collisions [endogenous];
-rear_collisions [endogenous]
-time_loss [outcome];
+algorithm, #categorical[exogenous] 
+shield_distance [exogenous]
+speed [exogenous]
+timeLoss [outcome]
+rear_end_collisions [outcome]
+lateral_collisions [outcome]
+emergency_brakes [endogenous]
+number_of_cars [exogenous]
 
 Constraint-based algorithms execute a conditional independence tests
 induced by each hypothetical graph. Because these tests are executed
@@ -40,11 +42,8 @@ Learning Bayesian Networks with the bnlearn R - https://arxiv.org/pdf/0908.3817.
 
 #TODO
 #compare graphs produced by each of the methods. Check how sensitive they are to false discovery rate.
-#compare how professions are distinct in terms of adjusted_score and qualification_score
 
 " 
-
-
 
 library(bnlearn)
 library(dplyr)
@@ -55,6 +54,13 @@ path = "C://Users//Christian//Documents//GitHub//Safe-RL-4-SAS//causal_discovery
 file = "causal_discovery_full_data.csv"
 
 df <- read.csv(paste0(path,file))
+df$shield_distance <- as.numeric(df$shield_distance)
+df$speed <- as.numeric(df$speed)
+df$timeLoss <- as.numeric(df$timeLoss)
+df$rear_end_collisions <- as.numeric(df$rear_end_collisions)
+df$lateral_collisions <- as.numeric(df$lateral_collisions)
+df$emergency_brakes <- as.numeric(df$emergency_brakes)
+df$number_of_cars <- as.numeric(df$number_of_cars)
 
 head(df)
 
@@ -76,94 +82,125 @@ df_selected$algorithm <- as.factor(df_selected$algorithm)
 
 node.names <- colnames(df_selected)
 
-#years_prog is not parent of age.
-blacklist_1 <- data.frame(from = c("years_prog"), 
-                          to   = c("age"))
+#shield and speed are not causally connected.
+blacklist_1 <- data.frame(from = c("shield_distance"), 
+                          to   = c("speed"))
 
-#Prevent speed to be parents of age and years_prog and profession
-blacklist_2 <- data.frame(from = c("speed"), 
-                          to   = c("years_prog","age","profession"))
+blacklist_2 <- data.frame(from   = c("speed"),
+                          to = c("shield_distance"))
 
-#profession has no parent nodes
-blacklist_3 <- data.frame(from = node.names[-grep("profession", node.names)], 
-                          to   = c("profession"))
-#test_duration is not parent of age, years_prog, profession
-blacklist_4 <- data.frame(from = c("test_duration"),
-                          to   = c("profession","years_prog","age"))#,"is_fast"))
-#adjusted_score cannot be parent of anyone
-blacklist_5 <- data.frame(from = c("adjusted_score"),
-                          to   = node.names[-grep("adjusted_score", node.names)])
+#----------
+#timeLoss is not parent of any variable,it is an outcome.
+ blacklist_3 <- data.frame(from = c("timeLoss"), 
+                           to   = c("shield_distance","speed","rear_end_collisions","lateral_collisions","emergency_brakes","number_of_cars"))
+#----------
+#collisions are independent from each other
+blacklist_4 <- data.frame(from = c("lateral_collisions"), 
+                           to   = c("rear_end_collisions"))
+ 
+blacklist_5 <- data.frame(from   = c("rear_end_collisions"),
+                           to = c("lateral_collisions"))
+#-----------
+#rear_end_collisions cannot cause shield_distance, speed, or timeLoss
+ 
+blacklist_6 <- data.frame(from   = c("rear_end_collisions"),
+                           to = c("shield_distance"))
+ 
+blacklist_7 <- data.frame(from = c("rear_end_collisions"), 
+                           to   = c("timeLoss"))
+ 
+blacklist_8 <- data.frame(from   = c("rear_end_collisions"),
+                            to = c("speed"))
+#-----------
+#lateral_collisions cannot cause shield_distance, speed, or timeLoss
+blacklist_9 <- data.frame(from = c("lateral_collisions"), 
+                           to   = c("speed"))
+ 
+blacklist_10 <- data.frame(from = c("lateral_collisions"), 
+                           to   = c("shield_distance"))
+ 
+blacklist_11 <- data.frame(from = c("lateral_collisions"), 
+                           to   = c("timeLoss"))
+ 
+#-----------
+#similarly, timeLoss cannot cause the collision types
+blacklist_12 <- data.frame(from   = c("timeLoss"),
+                          to = c("rear_end_collisions"))
+ 
+blacklist_13 <- data.frame(from   = c("timeLoss"),
+                           to = c("lateral_collisions"))
+#----------
 
 #Task Accuracy can only be measured with all tasks data. 
 #Here we are dealing only with programmer demographic data.
 
-blacklist_all <- rbind(blacklist_1,blacklist_3,blacklist_4,blacklist_5) 
+blacklist_all <- rbind(blacklist_1,blacklist_2,blacklist_3,blacklist_4,blacklist_5,
+                        blacklist_6,blacklist_7,blacklist_8,blacklist_9,
+                      blacklist_10,blacklist_11,blacklist_12,blacklist_13) 
 
 #------------------------------------------
-#Including Profession as Node
+#Including algorithm as Node
 
 bn <- pc.stable(df_selected,blacklist = blacklist_all)
-plot(bn,main="All Professions, pc.stable algorithm")
+plot(bn,main="All algorithms, pc.stable method")
 
 bn <-iamb(df_selected,blacklist = blacklist_all)
-plot(bn,main="All Professions, iamb algorithm")
+plot(bn,main="All algorithms, iamb method")
 
 bn <-iamb.fdr(df_selected,blacklist = blacklist_all)
-plot(bn,main="All Professions, iamb.fdr algorithm")
+plot(bn,main="All algorithms, iamb.fdr method")
 
 #-----------------------------------------
-#BY PROFESSION
+#BY RL algorithm 
 
-#Remove profession from blacklist
-blacklist_all <- blacklist_all[!(blacklist_all$from %in% c("profession") ),]
-blacklist_all <- blacklist_all[!(blacklist_all$to %in% c("profession") ),]
-#blacklist_all <- blacklist_all[!(blacklist_all$from %in% c("speed") ),]
-#blacklist_all <- blacklist_all[!(blacklist_all$to %in% c("speed") ),]
+#Remove algorithm from blacklist, because we will filter by algorithm, 
+#so we won't have this column in the selection dataset. 
+#i.e., if we keep, it will through an error
+blacklist_all <- blacklist_all[!(blacklist_all$from %in% c("algorithm") ),]
+blacklist_all <- blacklist_all[!(blacklist_all$to %in% c("algorithm") ),]
 
-
-#Run structure discovery for each profession
-professions = c("Other", "Undergraduate_Student","Graduate_Student","Hobbyist",
-                "Programmer","Professional")
+#Run structure discovery for each algorithm
+algorithms = c("trpo", "a2c",  "dqn",  "ppo")
 
 #PC-STABLE
-for (i in 1:length(professions)) {
-  choice = professions[i]
-  df_prof <- df_selected[df_selected$profession==choice,]
-  df_prof <- 
-    dplyr::select(df_prof,
+for (i in 1:length(algorithms)) {
+  choice = algorithms[i]
+  df_algo <- df_selected[df_selected$algorithm==choice,]
+  df_algo <- 
+    dplyr::select(df_algo,
                   years_prog,
                   age,
                   speed,
                   test_duration,
                   adjusted_score
     );
-  bn <-pc.stable(df_prof,blacklist = blacklist_all)
+  bn <-pc.stable(df_algo,blacklist = blacklist_all)
   plot(bn,main=choice)
   #graphviz.plot(bn,main=choice,shape="ellipse",layout = "circo");
 }
 
-"Analysis of results of the PC algorithm
-test duration seem relevant only for professional, undergrad, grad, hobbyist
+"ANALYSIS: Analysis of results of the PC algorithm test duration seem relevant
+only for professional, undergrad, grad, hobbyist
 only in undegrad that test duration is affected by years_prog"
 
 #IAMB
 for (i in 1:length(professions)) {
   choice = professions[i]
-  df_prof <- df_selected[df_selected$profession==choice,]
-  df_prof <- 
-    dplyr::select(df_prof,
+  df_algo <- df_selected[df_selected$profession==choice,]
+  df_algo <- 
+    dplyr::select(df_algo,
                   years_prog,
                   age,
                   speed,
                   test_duration,
                   adjusted_score
     );
-  bn <-iamb(df_prof,blacklist = blacklist_all)
+  bn <-iamb(df_algo,blacklist = blacklist_all)
   plot(bn,main=choice)
   #graphviz.plot(bn,main=choice,shape="ellipse",layout = "circo");
 }
 
-"Analysis of results of the Tabu algorithm
+"ANALYSIS of results of the Tabu algorithm
 Test duration has not effect on adjusted_score for other and Programmer
 Test duration has no parents for Graduate and Professional
 Only in Hobbyists that test duration is a mediator for effect on adjusted_score
@@ -176,143 +213,17 @@ Programmer, and Other.
 #IAMB.FDR
 for (i in 1:length(professions)) {
   choice = professions[i]
-  df_prof <- df_selected[df_selected$profession==choice,]
-  df_prof <- 
-    dplyr::select(df_prof,
+  df_algo <- df_selected[df_selected$profession==choice,]
+  df_algo <- 
+    dplyr::select(df_algo,
                   years_prog,
                   age,
                   speed,
                   test_duration,
                   adjusted_score
     );
-  bn <-iamb.fdr(df_prof,blacklist = blacklist_all)
+  bn <-iamb.fdr(df_algo,blacklist = blacklist_all)
   plot(bn,main=choice)
   #graphviz.plot(bn,main=choice,shape="ellipse",layout = "circo");
 }
-
-
-#---------------------------------------------------------------------
-#---------------------------------------------------------------------
-#Using now the qualification_score
-
-df_selected <-
-  dplyr::select(df_consent,
-                profession, #categorical
-                age,
-                years_prog,
-                test_duration,
-                speed, #or use is_fast, which is binary
-                qualification_score #outcome
-  );
-
-
-node.names <- colnames(df_selected)
-
-#years_prog is not parent of age.
-blacklist_1 <- data.frame(from = c("years_prog"), 
-                          to   = c("age"))
-#profession has parent nodes
-blacklist_2 <- data.frame(from = node.names[-grep("profession", node.names)], 
-                          to   = c("profession"))
-#test_duration is not parent of age, years_prog, profession
-blacklist_3 <- data.frame(from = c("test_duration"),
-                          to   = c("profession","years_prog","age"))
-#qualification_score cannot be parent of anyone
-blacklist_4 <- data.frame(from = c("qualification_score"),
-                          to   = node.names[-grep("qualification_score", node.names)])
-#Prevent speed to be parents of age and years_prog and profession
-blacklist_5 <- data.frame(from = c("speed"), 
-                          to   = c("years_prog","age","profession"))
-
-
-blacklist_all <- rbind(blacklist_1,blacklist_2,blacklist_3,blacklist_4,blacklist_5) 
-
-
-#------------------------------------------
-#Including Profession as Node
-
-bn <- pc.stable(df_selected,blacklist = blacklist_all)
-plot(bn,main="All Professions, pc.stable algorithm")
-
-bn <-iamb(df_selected,blacklist = blacklist_all)
-plot(bn,main="All Professions, iamb algorithm")
-
-bn <-iamb.fdr(df_selected,blacklist = blacklist_all)
-plot(bn,main="All Professions, iamb.fdr algorithm")
-
-#-----------------------------------------
-#Remove Profession as Node
-
-#Remove profession from blacklist
-blacklist_all <- blacklist_all[!(blacklist_all$from %in% c("profession") ),]
-blacklist_all <- blacklist_all[!(blacklist_all$to %in% c("profession") ),]
-
-#PC-STABLE
-for (i in 1:length(professions)) {
-  choice = professions[i]
-  df_prof <- df_selected[df_selected$profession==choice,]
-  df_prof <- 
-    dplyr::select(df_prof,
-                  years_prog,
-                  age,
-                  speed,
-                  test_duration,
-                  adjusted_score
-    );
-  bn <-pc.stable(df_prof,blacklist = blacklist_all)
-  plot(bn,main=choice)
-  #graphviz.plot(bn,main=choice,shape="ellipse",layout = "circo");
-}
-
-"Analysis of results of the PC algorithm
-Test duration has not effect on adjusted_score for other and Programmer
-Only in undegrad that test duration is affected by years_prog
-Hence, qualification_Score and adjusted_score produced the same graphs with the PC algorithm
-"
-
-#IAMB
-for (i in 1:length(professions)) {
-  choice = professions[i]
-  df_prof <- df_selected[df_selected$profession==choice,]
-  df_prof <- 
-    dplyr::select(df_prof,
-                  years_prog,
-                  age,
-                  speed,
-                  test_duration,
-                  adjusted_score
-    );
-  bn <-iamb(df_prof,blacklist = blacklist_all)
-  plot(bn,main=choice)
-  #graphviz.plot(bn,main=choice,shape="ellipse",layout = "circo");
-}
-
-"Analysis of results of the Tabu algorithm
-Test duration has no effect on adjusted_score for other and Programmer
-Test duration has no parents for Graduate and Professional
-Only in Hobbyists that test duration is a mediator for effect on adjusted_score
-Test duration has years_prog as parent in Hobbyist, Undergrad, 
-Programmer, and Other.
-
-Hence, qualification_score and adjusted_score produced the same graph with the tabu algorithm
-"
-
-#IAMB-FDR
-for (i in 1:length(professions)) {
-  choice = professions[i]
-  df_prof <- df_selected[df_selected$profession==choice,]
-  df_prof <- 
-    dplyr::select(df_prof,
-                  years_prog,
-                  age,
-                  speed,
-                  test_duration,
-                  adjusted_score
-    );
-  bn <-iamb.fdr(df_prof,blacklist = blacklist_all)
-  plot(bn,main=choice)
-  #graphviz.plot(bn,main=choice,shape="ellipse",layout = "circo");
-}
-
-
 
