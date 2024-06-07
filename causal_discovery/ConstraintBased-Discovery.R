@@ -131,14 +131,34 @@ blacklist_13 <- data.frame(from   = c("timeLoss"),
                            to = c("lateral_collisions"))
 #----------
 
+#number_of_cars cannot cause change on other exogeneous variables
+blacklist_14 <- data.frame(from = c("number_of_cars"), 
+                          to   = c("speed"))
+
+blacklist_15 <- data.frame(from = c("number_of_cars"), 
+                           to   = c("shield_distance"))
+
+blacklist_16 <- data.frame(from = c("number_of_cars"), 
+                           to   = c("algorithm"))
+
+#----------
+
+#number_of_cars cannot de caused by any other covariate
+blacklist_17 <- data.frame(from   = c("algorithm","shield_distance","speed","rear_end_collisions","lateral_collisions","emergency_brakes"),
+                           to = c("number_of_cars"))
+
+#----------
+
 #Task Accuracy can only be measured with all tasks data. 
 #Here we are dealing only with programmer demographic data.
 
-blacklist_all <- rbind(blacklist_1,blacklist_2,blacklist_3,blacklist_4,blacklist_5,
-                        blacklist_6,blacklist_7,blacklist_8,blacklist_9,
-                      blacklist_10,blacklist_11,blacklist_12,blacklist_13) 
+blacklist_all <- rbind(blacklist_1,blacklist_2,blacklist_3,blacklist_4,
+                       blacklist_5,blacklist_6,blacklist_7,blacklist_8,
+                       blacklist_9,blacklist_10,blacklist_11,blacklist_12,
+                       blacklist_13,blacklist_14,blacklist_15,blacklist_16,
+                       blacklist_17) 
 
-#------------------------------------------
+#-----------------------------------------
 #Including algorithm as Node
 
 bn <- pc.stable(df_selected,blacklist = blacklist_all)
@@ -178,7 +198,7 @@ for (i in 1:length(algorithms)) {
                   number_of_cars
     );
   bn <-pc.stable(df_algo,blacklist = blacklist_all)
-  plot(bn,main=choice)
+  plot(bn,main=paste0("RL Algorithm: ",choice,", Discovery Method: pc-stable"))
   #graphviz.plot(bn,main=choice,shape="ellipse",layout = "circo");
 }
 
@@ -201,7 +221,7 @@ for (i in 1:length(algorithms)) {
                   number_of_cars
     );
   bn <-iamb(df_algo,blacklist = blacklist_all)
-  plot(bn,main=choice)
+  plot(bn,main=paste0("RL Algorithm: ",choice,", Discovery Method: iamb"))
   #graphviz.plot(bn,main=choice,shape="ellipse",layout = "circo");
 }
 
@@ -230,7 +250,6 @@ for (i in 1:length(algorithms)) {
                   number_of_cars
     );
   bn <-iamb.fdr(df_algo,blacklist = blacklist_all)
-  plot(bn,main=choice)
-  #graphviz.plot(bn,main=choice,shape="ellipse",layout = "circo");
+  plot(bn,main=paste0("RL Algorithm: ",choice,", Discovery Method: iamb.fdr"))  #graphviz.plot(bn,main=choice,shape="ellipse",layout = "circo");
 }
 
