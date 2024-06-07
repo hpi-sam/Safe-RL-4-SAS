@@ -92,7 +92,7 @@ blacklist_2 <- data.frame(from   = c("speed"),
 #----------
 #timeLoss is not parent of any variable,it is an outcome.
  blacklist_3 <- data.frame(from = c("timeLoss"), 
-                           to   = c("shield_distance","speed","rear_end_collisions","lateral_collisions","emergency_brakes","number_of_cars"))
+                           to   = c("algorithm","shield_distance","speed","rear_end_collisions","lateral_collisions","emergency_brakes","number_of_cars"))
 #----------
 #collisions are independent from each other
 blacklist_4 <- data.frame(from = c("lateral_collisions"), 
@@ -160,7 +160,8 @@ blacklist_all <- blacklist_all[!(blacklist_all$from %in% c("algorithm") ),]
 blacklist_all <- blacklist_all[!(blacklist_all$to %in% c("algorithm") ),]
 
 #Run structure discovery for each algorithm
-algorithms = c("trpo", "a2c",  "dqn",  "ppo")
+#algorithms = c("trpo", "a2c",  "dqn",  "ppo") the others do not have much data yet.
+algorithms = c("a2c")
 
 #PC-STABLE
 for (i in 1:length(algorithms)) {
@@ -168,11 +169,13 @@ for (i in 1:length(algorithms)) {
   df_algo <- df_selected[df_selected$algorithm==choice,]
   df_algo <- 
     dplyr::select(df_algo,
-                  years_prog,
-                  age,
+                  shield_distance,
                   speed,
-                  test_duration,
-                  adjusted_score
+                  timeLoss,
+                  rear_end_collisions, 
+                  lateral_collisions,
+                  emergency_brakes,
+                  number_of_cars
     );
   bn <-pc.stable(df_algo,blacklist = blacklist_all)
   plot(bn,main=choice)
@@ -184,16 +187,18 @@ only for professional, undergrad, grad, hobbyist
 only in undegrad that test duration is affected by years_prog"
 
 #IAMB
-for (i in 1:length(professions)) {
-  choice = professions[i]
-  df_algo <- df_selected[df_selected$profession==choice,]
+for (i in 1:length(algorithms)) {
+  choice = algorithms[i]
+  df_algo <- df_selected[df_selected$algorithm==choice,]
   df_algo <- 
     dplyr::select(df_algo,
-                  years_prog,
-                  age,
+                  shield_distance,
                   speed,
-                  test_duration,
-                  adjusted_score
+                  timeLoss,
+                  rear_end_collisions, 
+                  lateral_collisions,
+                  emergency_brakes,
+                  number_of_cars
     );
   bn <-iamb(df_algo,blacklist = blacklist_all)
   plot(bn,main=choice)
@@ -211,16 +216,18 @@ Programmer, and Other.
 
 #----------------------------------
 #IAMB.FDR
-for (i in 1:length(professions)) {
-  choice = professions[i]
-  df_algo <- df_selected[df_selected$profession==choice,]
+for (i in 1:length(algorithms)) {
+  choice = algorithms[i]
+  df_algo <- df_selected[df_selected$algorithm==choice,]
   df_algo <- 
     dplyr::select(df_algo,
-                  years_prog,
-                  age,
+                  shield_distance,
                   speed,
-                  test_duration,
-                  adjusted_score
+                  timeLoss,
+                  rear_end_collisions, 
+                  lateral_collisions,
+                  emergency_brakes,
+                  number_of_cars
     );
   bn <-iamb.fdr(df_algo,blacklist = blacklist_all)
   plot(bn,main=choice)
