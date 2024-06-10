@@ -20,10 +20,10 @@ ROUTE_FILE='./nets/simple_intersection/evaluation_routes/simple_intersection_[1_
 #  done
 #done
 
-model='a2c'
+model='trpo'
 speed_limit='50'
 for shield_distance in '1' '5' '10' '20' '50' '100'; do
-  for (( index = 30; index < 300; index++ )); do
+  for (( index = 0; index < 300; index++ )); do
     python /Users/finn/Code/Safe-RL-4-SAS/experiments/evaluate_model_safe_rl_report.py $model $shield_distance $speed_limit "$ROUTE_FILE" $index
   done
 done
