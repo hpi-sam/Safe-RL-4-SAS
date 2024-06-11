@@ -11,3 +11,5 @@ results/*
 /graphs/
 /results_safe_rl_report/
 /*.zip
+.Rproj.user
+.Rhistory
