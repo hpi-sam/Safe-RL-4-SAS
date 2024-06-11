@@ -181,7 +181,7 @@ blacklist_all <- blacklist_all[!(blacklist_all$to %in% c("algorithm") ),]
 
 #Run structure discovery for each algorithm
 #algorithms = c("trpo", "a2c",  "dqn",  "ppo") the others do not have much data yet.
-algorithms = c("a2c")
+algorithms = c("ppo")
 
 #PC-STABLE
 for (i in 1:length(algorithms)) {
