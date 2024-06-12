@@ -34,14 +34,14 @@ def run(model_name, delay=0, shield_distance=0, speed_limit=50, route_file='', i
 
     folder_name=f'{model_name}_{shield_distance}_{speed_limit}'
 
-    if not os.path.exists(f'results_safe_rl_report/{folder_name}'):
-        os.makedirs(f'results_safe_rl_report/{folder_name}')
+    if not os.path.exists(f'results_paper/{folder_name}'):
+        os.makedirs(f'results_paper/{folder_name}')
 
     additional_sumo_cmd = ['--d', str(delay)]
     additional_sumo_cmd.extend(['--duration-log.statistics'])
-    additional_sumo_cmd.extend([f'--statistic-output results_safe_rl_report/{folder_name}/{str(index).zfill(5)}.statistics.xml'])
-    additional_sumo_cmd.extend([f"--tripinfo-output results_safe_rl_report/{folder_name}/{str(index).zfill(5)}.tripinfo.xml"])
-    additional_sumo_cmd.extend([f"--collision-output results_safe_rl_report/{folder_name}/{str(index).zfill(5)}.collision.xml"])
+    additional_sumo_cmd.extend([f'--statistic-output results_paper/{folder_name}/{str(index).zfill(5)}.statistics.xml'])
+    additional_sumo_cmd.extend([f"--tripinfo-output results_paper/{folder_name}/{str(index).zfill(5)}.tripinfo.xml"])
+    additional_sumo_cmd.extend([f"--collision-output results_paper/{folder_name}/{str(index).zfill(5)}.collision.xml"])
     additional_sumo_cmd.extend(["--collision.check-junctions"])
 
     env = SumoEnvironment(
