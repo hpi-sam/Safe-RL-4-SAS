@@ -30,22 +30,27 @@ for experiment in folders:
             emergency_brakes = int(statistics_root.find('safety').attrib.get('emergencyBraking'))
         except TypeError as e:
             emergency_brakes = 0
+
         for value in statistics_root.find('vehicleTripStatistics').attrib:
             if value != 'count':
                 data[value] = float(statistics_root.find('vehicleTripStatistics').attrib.get(value))
             else:
+                # Sumo Version 1.18.0
                 data['number_of_cars'] = int(statistics_root.find('vehicleTripStatistics').attrib.get(value))
+
+        # Sumo Version 1.12.0
+        if 'number_of_cars' not in data.keys():
+            vehicles = statistics_root.find('vehicles')
+            data['number_of_cars'] = int(vehicles.attrib['loaded']) - int(vehicles.attrib['running'])
 
         data['rear_end_collisions'] = rear_end_collisions
         data['lateral_collisions'] = total_collisions - rear_end_collisions
         data['emergency_brakes'] = emergency_brakes
 
         experiment_data.append(data)
-        # print(data)
 
     df = pd.DataFrame(experiment_data)
     df.set_index('index', inplace=True)
     df.sort_index(inplace=True)
 
     df.to_csv(f'{experiment}/summary.csv')
-    # print(df)
