@@ -30,7 +30,7 @@ Learning Bayesian Networks with the bnlearn R - https://arxiv.org/pdf/0908.3817.
 " 
 
 #Load script for generating blacklists of edges 
-#source("C://Users//Christian//Documents//GitHub//CausalModel_FaultUnderstanding//causal_discovery//GenerateBlacklists.R")
+source("C://Users//Christian//Documents//GitHub//Safe-RL-4-SAS//causal_discovery//util//GenerateGraphPlot.R")
 
 library(bnlearn)
 library(dplyr)
@@ -39,6 +39,7 @@ library(dplyr)
 
 path = "C://Users//Christian//Documents//GitHub//Safe-RL-4-SAS//causal_discovery//"
 file = "causal_discovery_full_data.csv"
+plots_folder = paste0(path,"graphs//")
 
 df <- read.csv(paste0(path,file))
 df$shield_distance <- as.numeric(df$shield_distance)
@@ -59,11 +60,17 @@ df_selected <-
                 timeLoss,
                 rear_end_collisions, 
                 lateral_collisions,
-                emergency_brakes,
-                number_of_cars
+                emergency_brakes
+                #number_of_cars
   );
 
+outcome_nodes = c("speed","rear_end_collisions","lateral_collisions")
+
 head(df_selected)
+
+#rowSums(is.na(df_selected))
+
+#df[complete.cases(df_selected), ]
 
 df_selected$algorithm <- as.factor(df_selected$algorithm)
 
@@ -79,7 +86,7 @@ blacklist_2 <- data.frame(from   = c("speed"),
 #----------
 #timeLoss is not parent of any variable,it is an outcome.
 blacklist_3 <- data.frame(from = c("timeLoss"), 
-                          to   = c("algorithm","shield_distance","speed","rear_end_collisions","lateral_collisions","emergency_brakes","number_of_cars"))
+                          to   = c("algorithm","shield_distance","speed","rear_end_collisions","lateral_collisions","emergency_brakes"))#,"number_of_cars"))
 #----------
 #collisions are independent from each other
 blacklist_4 <- data.frame(from = c("lateral_collisions"), 
@@ -142,76 +149,60 @@ blacklist_17 <- data.frame(from   = c("algorithm","shield_distance","speed","rea
 blacklist_all <- rbind(blacklist_1,blacklist_2,blacklist_3,blacklist_4,
                        blacklist_5,blacklist_6,blacklist_7,blacklist_8,
                        blacklist_9,blacklist_10,blacklist_11,blacklist_12,
-                       blacklist_13,blacklist_14,blacklist_15,blacklist_16,
-                       blacklist_17) 
+                       blacklist_13)#blacklist_14,blacklist_15,blacklist_16)
+                       #blacklist_17) 
 
 #------------------------------------------
-#HC
+#HC Hill-Climbing
 bn <- hc(df_selected,blacklist = blacklist_all)
-bn_name="E2 All Test_Score (hc)";
-save_bayesian_net_plot(bayesian_net=bn,
-                       outcome_node=outcomeNode,
-                       plot_title=bn_name,
-                       file_name=bn_name,
-                       folder=plots_folder)
+plot(bn,main="All algorithms, Discovery method:HC")
+
 #TABU
 bn <-tabu(df_selected,blacklist = blacklist_all)
-bn_name="E2 All Test_Score (tabu)";
-save_bayesian_net_plot(bayesian_net=bn,
-                       outcome_node=outcomeNode,
-                       plot_title=bn_name,
-                       file_name=bn_name,
-                       folder=plots_folder)
+plot(bn,main="All algorithms, Discovery method:Tabu")
+
 "
-Both algorithms produced the same graph. It has two additional 
-edges than the graph discovered by the CB algorithms. 
-The two additional edges are years_prog->test_duration, age->test_score
+Both algorithms produced similar graph. The two differences were:
+lateral_collision -> emergecy_brakes (Tabu), while in HC is the reverse.
+shield_distance -> emergency_brakes (Tabu), while HC has no such edge.
 "
 
 #----------------------------------------------
 #----------------------------------------------
-#BY PROFESSION
+#BY Algorithm
 
-df_selected <-
-  dplyr::select(df_consent,
-                profession,
-                partic_age,
-                progr_years,
-                test_duration,
-                test_score #outcome
-  );
+#Remove algorithm from blacklist, because we will filter by algorithm, 
+#so we won't have this column in the selection dataset. 
+#i.e., if we keep, it will through an error
+blacklist_all <- blacklist_all[!(blacklist_all$from %in% c("algorithm") ),]
+blacklist_all <- blacklist_all[!(blacklist_all$to %in% c("algorithm") ),]
 
-#Run structure discovery for each profession
-professions = c("Other", "Undergraduate_Student","Graduate_Student","Hobbyist",
-                "Programmer","Professional")
 
 #Hill-Climbing and Tabu
-for (i in 1:length(professions)) {
-  choice = professions[i]
-  df_prof <- df_selected[df_selected$profession==choice,]
-  df_prof <- 
-    dplyr::select(df_prof,
-                  partic_age,
-                  progr_years,
-                  test_duration,
-                  test_score
-    );
+#Run structure discovery for each algorithm
+#algorithms = c("trpo", "a2c",  "dqn",  "ppo") the others do not have much data yet.
+algorithms = c("ppo")
+
+for (i in 1:length(algorithms)) {
+  choice = algorithms[i]
+  df_algo <- df_selected[df_selected$algorithm==choice,]
+  df_algo <- 
+    dplyr::select(df_algo,
+                  shield_distance,
+                  speed,
+                  timeLoss,
+                  rear_end_collisions, 
+                  lateral_collisions,
+                  emergency_brakes
+  );
   #HC
-  bn <-hc(df_prof,blacklist = blacklist_all)
-  bn_name=paste("E2",choice," Test_Score (hc)");
-  save_bayesian_net_plot(bayesian_net=bn,
-                         outcome_node=outcomeNode,
-                         plot_title=bn_name,
-                         file_name=bn_name,
-                         folder=plots_folder)
+  bn <-hc(df_algo,blacklist = blacklist_all)
+  plot(bn,main=paste0("RL Algorithm: ",choice,", Discovery Method: HC"))
+  
   #TABU
-  bn <-tabu(df_prof,blacklist = blacklist_all)
-  bn_name=paste("E2",choice," Test_Score (tabu)");
-  save_bayesian_net_plot(bayesian_net=bn,
-                         outcome_node=outcomeNode,
-                         plot_title=bn_name,
-                         file_name=bn_name,
-                         folder=plots_folder)
+  bn <-tabu(df_algo,blacklist = blacklist_all)
+  plot(bn,main=paste0("RL Algorithm: ",choice,", Discovery Method: Tabu"))
+  
 }
 "Results of Hill Climbing
 years_prog -> test_duration, all except Grad_student and Professionals
@@ -225,237 +216,3 @@ Results of Tabu produced the exact same results as Hill Climbing
 "
 
 #-------------------------------------------------------
-#-------------------------------------------------------
-#Using now the qualification_score
-
-#---------------------------------------------------------------------
-#Using now the qualification_score
-
-df_consent <- rename(df_consent,orig_score=qualification_score)
-
-df_selected <-
-  dplyr::select(df_consent,
-                years_prog,
-                partic_age,
-                test_duration,
-                orig_score #outcome
-  );
-
-
-blacklist_all <- blacklist_E2_TestScore(node.names=colnames(df_selected), 
-                                        outcome.node="orig_score")
-
-#------------------------------------------
-#Including Profession as Node
-
-bn <- pc.stable(df_selected,blacklist = blacklist_all)
-plot(bn,main="All Professions, pc.stable algorithm")
-
-bn <-iamb.fdr(df_selected,blacklist = blacklist_all)
-plot(bn,main="All Professions, iamb.fdr algorithm")
-
-#-----------------------------------------
-# Analysis by Profession
-
-df_selected <-
-  dplyr::select(df_consent,
-                profession,
-                years_prog,
-                partic_age,
-                test_duration,
-                orig_score #outcome
-  );
-
-for (i in 1:length(professions)) {
-  choice = professions[i]
-  df_prof <- df_selected[df_selected$profession==choice,]
-  df_prof <- 
-    dplyr::select(df_prof,
-                  years_prog,
-                  partic_age,
-                  test_duration,
-                  orig_score
-    );
-  
-  #HC
-  bn <-pc.stable(df_prof,blacklist = blacklist_all)
-  bn_name=paste("E2",choice," Original_Test_Score (hc)");
-  save_bayesian_net_plot(bayesian_net=bn,
-                         outcome_node="orig_score",
-                         plot_title=bn_name,
-                         file_name=bn_name,
-                         folder=plots_folder)
-  #TABU
-  bn <-iamb.fdr(df_prof,blacklist = blacklist_all)
-  bn_name=paste("E2",choice," Original_Test_Score (tabu)");
-  save_bayesian_net_plot(bayesian_net=bn,
-                         outcome_node="orig_score",
-                         plot_title=bn_name,
-                         file_name=bn_name,
-                         folder=plots_folder)
-}
-"Qualification score results were identical to Adjusted score"
-
-#------------------------------------------------------------------------
-#------------------------------------------------------
-#SPEED CLUSTERS
-#Evaluate how fast and slow can explain test_score
-#------------------------------------------------------
-
-#FAST
-for (i in 1:length(professions)) {
-  choice = professions[i]
-  df_prof <- df_consent[df_consent$profession==choice,]
-  median_membership <- median(df_prof$testDuration_fastMembership);
-  df_prof <- df_prof[df_prof$testDuration_fastMembership>=median_membership,]
-  df_selected <- 
-    dplyr::select(df_prof,
-                  progr_years,
-                  partic_age,
-                  test_duration,
-                  test_score
-    );
-  
-  blacklist_all <- blacklist_E2_TestScore(node.names=colnames(df_selected), 
-                                          outcome.node="test_score")
-  bn <- tabu(df_selected,blacklist = blacklist_all)
-  bn_name=paste("E2 Fast (Median)",choice," Test_Score (tabu)");
-  plot(bn,main=bn_name)
-       
-  # save_bayesian_net_plot(bayesian_net=bn,
-  #                        outcome_node="test_score",
-  #                        plot_title=bn_name,
-  #                        file_name=bn_name,
-  #                        folder=plots_folder)
-  
-}
-plot(bn)
-
-"
-Results on FAST RESPONDERS
-
-Mean as threshold: Graphs are identical to no clustering by answer speed.
-Other: yoe -> score, age -> yoe
-Undergrad: yoe -> score, age -> yoe, age->score, yoe->duration, duration->score
-Grad: yoe -> score, age -> yoe, age->score
-Hobbyist: yoe -> score, age -> yoe, age->score, yoe->duration, duration->score
-Programmer: yoe -> score, age -> yoe,
-Professional: yoe -> score, age -> yoe, age->score, duration->score
-
-Median as threshold: 
-Other: age->yoe->score
-Undergrad: age->yoe->score; age->score
-Grad: no edges
-Hobbyist:age->yoe->score; age->score<-duration
-Programmer: age->yoe->score; score<-duration
-Professional: age->yoe->score; age->score
-So, only hobbyist and programmer have an edge from duration->score
-No profession has edges arriving at duration
-Hence, when conditioning on duration, we would to have only
-minor effect on hobbyist and programmer, but no effect on the other professions.
-This implies that fast responders would have similar results 
-as the aggregate data (not filter by speed). 
-
-Moreover,looking at the variance of the fast responder duration, we have
-"
-
-#SLOW
-i=1
-for (i in 1:length(professions)) {
-  choice = professions[i]
-  df_prof <- df_consent[df_consent$profession==choice,]
-  median_membership <- median(df_prof$testDuration_fastMembership);
-  df_prof <- df_prof[df_prof$testDuration_fastMembership<median_membership,]
-  df_selected <- 
-    dplyr::select(df_prof,
-                  progr_years,
-                  partic_age,
-                  test_duration,
-                  test_score
-    );
-  
-  blacklist_all <- blacklist_E2_TestScore(node.names=colnames(df_selected), 
-                                          outcome.node="test_score")
-  bn <- tabu(df_selected,blacklist = blacklist_all)
-  bn_name=paste("E2 Slow (Median)",choice," Test_Score (tabu)");
-  save_bayesian_net_plot(bayesian_net=bn,
-                         outcome_node="test_score",
-                         plot_title=bn_name,
-                         file_name=bn_name,
-                         folder=plots_folder)
-  
-}
-
-
-"Graphs for FAST Mean and Median are identical to no clustering by answer speed.
-Other: yoe -> score, age -> yoe
-Undergrad: yoe -> score, age -> yoe, age->score, yoe->duration, duration->score
-Grad: yoe -> score, age -> yoe, age->score
-Hobbyist: yoe -> score, age -> yoe, age->score, yoe->duration, duration->score
-Programmer: yoe -> score, age -> yoe,
-Professional: yoe -> score, age -> yoe, age->score, duration->score
-"
-
-
-df_consent_slow <- df_consent[!df_consent$is_fast,]
-df_consent_slow <-
-  dplyr::select(df_consent_slow,
-                years_prog,
-                age,
-                test_duration,
-                adjusted_score #outcome
-  );
-bn <-tabu(df_consent_slow,blacklist = blacklist_all)
-plot(bn,main="SLOW Answers (Tabu algorithm)")
-
-"
-SLOW answer present only the folling two edges
-year_prog->adjusted_score, years_prog -> test_duration
-"
-
-#---------------------------------
-#Analysis of SPEED cluster by Profession
-
-#TABU FAST
-df_consent_fast <- df_consent[df_consent$is_fast,]
-for (i in 1:length(professions)) {
-  choice = professions[i]
-  df_prof <- df_selected[df_consent_fast$profession==choice,]
-  df_prof <- 
-    dplyr::select(df_prof,
-                  years_prog,
-                  age,
-                  test_duration,
-                  adjusted_score
-    );
-  bn <-tabu(df_prof,blacklist = blacklist_all)
-  plot(bn,main=paste(choice,"(fast answers)"))
-}
-
-"Fast answer cluster has same results as no clustering"
-
-
-#TABU SLOW
-df_consent_fast <- df_consent[!df_consent$is_fast,]
-for (i in 1:length(professions)) {
-  choice = professions[i]
-  df_prof <- df_selected[df_consent_slow$profession==choice,]
-  df_prof <- 
-    dplyr::select(df_prof,
-                  years_prog,
-                  age,
-                  test_duration,
-                  adjusted_score
-    );
-  bn <-tabu(df_prof,blacklist = blacklist_all)
-  plot(bn,main=paste(choice,"(slow answers)"))
-}
-
-"Slow answer clustering graphs showed no edges"
-
-#-------------------------------------------------------
-
-#Remove profession from blacklist
-#blacklist_all <- blacklist_all[!(blacklist_all$from %in% c("profession") ),]
-#blacklist_all <- blacklist_all[!(blacklist_all$to %in% c("profession") ),]
-
