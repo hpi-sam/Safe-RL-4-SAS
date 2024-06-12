@@ -3,6 +3,17 @@ SHIELD_DISTANCE=0
 SPEED_LIMIT=100 # '30' '50' '80' '100' '130'
 ROUTE_FILE='./nets/simple_intersection/evaluation_routes/simple_intersection_[1_1_1].rou.xml'
 
+
+for (( index = 0; index < 300; index++ )); do
+  for shield_distance in '0' '1' '5' '10' '20' '50' '100'; do
+    for speed_limit in '30' '50' '80' '100' '130'; do
+      for model in 'a2c' 'trpo' 'dqn' 'ppo'; do
+        python /home/giese/finn/ps-safe-rl/Safe-RL-4-SAS/experiments/evaluate_model_safe_rl_report.py $model $shield_distance $speed_limit "$ROUTE_FILE" $index
+      done
+    done
+  done
+done
+
 #speed_limit=50
 #shield_distance=0
 #for model in 'dqn' 'ppo' 'trpo' 'a2c'; do
@@ -20,13 +31,13 @@ ROUTE_FILE='./nets/simple_intersection/evaluation_routes/simple_intersection_[1_
 #  done
 #done
 
-model='trpo'
-speed_limit='50'
-for shield_distance in '1' '5' '10' '20' '50' '100'; do
-  for (( index = 0; index < 300; index++ )); do
-    python /Users/finn/Code/Safe-RL-4-SAS/experiments/evaluate_model_safe_rl_report.py $model $shield_distance $speed_limit "$ROUTE_FILE" $index
-  done
-done
+#model='ppo'
+#speed_limit='50'
+#for shield_distance in '1' '5' '10' '20' '50' '100'; do
+#  for (( index = 0; index < 100; index++ )); do
+#    python /home/giese/finn/ps-safe-rl/Safe-RL-4-SAS/experiments/#evaluate_model_safe_rl_report.py $model $shield_distance $speed_limit "$ROUTE_FILE" $index
+#  done
+#done
 
 #for (( index = 0; index < 1000; index++ )); do
 #  python ./experiments/evaluate_model_load_balanced.py $MODEL $SHIELD_DISTANCE $SPEED_LIMIT "$ROUTE_FILE" $index
