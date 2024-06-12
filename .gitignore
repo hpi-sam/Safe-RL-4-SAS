@@ -13,3 +13,5 @@ results/*
 /*.zip
 .Rproj.user
 .Rhistory
+/results_paper/
+/results_paper.tar

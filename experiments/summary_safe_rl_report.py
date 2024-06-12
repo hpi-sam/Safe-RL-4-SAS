@@ -7,7 +7,7 @@ model = 'a2c'
 shield = '0'
 speed = '100'
 
-folders = glob.glob(f'./results_safe_rl_report/*')
+folders = glob.glob(f'./results_paper/*')
 
 for experiment in folders:
 
