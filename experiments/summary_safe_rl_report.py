@@ -22,22 +22,19 @@ for experiment in folders:
 
         rear_end_collisions = sum('se' in child.attrib.get('victim') for child in collision_root)
         total_collisions = int(statistics_root.find('safety').attrib.get('collisions'))
+        average_speed = float(statistics_root.find('vehicleTripStatistics').attrib.get('speed'))
         try:
             emergency_brakes = int(statistics_root.find('safety').attrib.get('emergencyBraking'))
         except TypeError as e:
             emergency_brakes = 0
 
         for value in statistics_root.find('vehicleTripStatistics').attrib:
-            if value != 'count':
+            if value != 'count' and value != 'speed':
                 data[value] = float(statistics_root.find('vehicleTripStatistics').attrib.get(value))
-            else:
-                # Sumo Version 1.18.0
+            elif value == 'count':
                 data['number_of_cars'] = int(statistics_root.find('vehicleTripStatistics').attrib.get(value))
-
-        # Sumo Version 1.12.0
-        if 'number_of_cars' not in data.keys():
-            vehicles = statistics_root.find('vehicles')
-            data['number_of_cars'] = int(vehicles.attrib['loaded']) - int(vehicles.attrib['running'])
+            elif value == 'speed':
+                data['average_speed'] = round(float(statistics_root.find('vehicleTripStatistics').attrib.get(value)) * 3.6, 3)
 
         data['rear_end_collisions'] = rear_end_collisions
         data['lateral_collisions'] = total_collisions - rear_end_collisions
