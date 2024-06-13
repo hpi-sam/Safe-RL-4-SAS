@@ -3,10 +3,6 @@ import xml.etree.ElementTree as ET
 
 import pandas as pd
 
-model = 'a2c'
-shield = '0'
-speed = '100'
-
 folders = glob.glob(f'./results_paper/*')
 
 for experiment in folders:
