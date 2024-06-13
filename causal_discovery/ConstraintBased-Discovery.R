@@ -51,7 +51,9 @@ library(dplyr)
 #Load only Consent data. No data from tasks, only from demographics and qualification test
 
 path = "C://Users//Christian//Documents//GitHub//Safe-RL-4-SAS//causal_discovery//"
-file = "causal_discovery_full_data.csv"
+file = "causal_discovery_new_data.csv"
+
+#"causal_discovery_full_data.csv"
 
 df <- read.csv(paste0(path,file))
 df$shield_distance <- as.numeric(df$shield_distance)
@@ -130,21 +132,30 @@ blacklist_12 <- data.frame(from   = c("timeLoss"),
 blacklist_13 <- data.frame(from   = c("timeLoss"),
                            to = c("lateral_collisions"))
 #----------
+#similarly, emergency_brakes cannot be caused the collision types
+blacklist_14 <- data.frame(from   = c("rear_end_collisions"),
+                           to = c("emergency_brakes"))
+
+blacklist_15 <- data.frame(from   = c("lateral_collisions"),
+                           to = c("emergency_brakes"))
+
+#----------
+
 
 #number_of_cars cannot cause change on other exogeneous variables
-blacklist_14 <- data.frame(from = c("number_of_cars"), 
+blacklist_16 <- data.frame(from = c("number_of_cars"), 
                           to   = c("speed"))
 
-blacklist_15 <- data.frame(from = c("number_of_cars"), 
+blacklist_17 <- data.frame(from = c("number_of_cars"), 
                            to   = c("shield_distance"))
 
-blacklist_16 <- data.frame(from = c("number_of_cars"), 
+blacklist_18 <- data.frame(from = c("number_of_cars"), 
                            to   = c("algorithm"))
 
 #----------
 
 #number_of_cars cannot de caused by any other covariate
-blacklist_17 <- data.frame(from   = c("algorithm","shield_distance","speed","rear_end_collisions","lateral_collisions","emergency_brakes"),
+blacklist_19 <- data.frame(from   = c("algorithm","shield_distance","speed","rear_end_collisions","lateral_collisions","emergency_brakes"),
                            to = c("number_of_cars"))
 
 #----------
@@ -156,7 +167,7 @@ blacklist_all <- rbind(blacklist_1,blacklist_2,blacklist_3,blacklist_4,
                        blacklist_5,blacklist_6,blacklist_7,blacklist_8,
                        blacklist_9,blacklist_10,blacklist_11,blacklist_12,
                        blacklist_13,blacklist_14,blacklist_15,blacklist_16,
-                       blacklist_17) 
+                       blacklist_17,blacklist_18,blacklist_19) 
 
 #-----------------------------------------
 #Including algorithm as Node
@@ -180,8 +191,8 @@ blacklist_all <- blacklist_all[!(blacklist_all$from %in% c("algorithm") ),]
 blacklist_all <- blacklist_all[!(blacklist_all$to %in% c("algorithm") ),]
 
 #Run structure discovery for each algorithm
-#algorithms = c("trpo", "a2c",  "dqn",  "ppo") the others do not have much data yet.
-algorithms = c("ppo")
+algorithms = c("trpo", "a2c",  "dqn",  "ppo") 
+#algorithms = c("dqn")
 
 #PC-STABLE
 for (i in 1:length(algorithms)) {
