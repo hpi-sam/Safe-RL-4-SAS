@@ -34,7 +34,7 @@ for experiment in folders:
             elif value == 'count':
                 data['number_of_cars'] = int(statistics_root.find('vehicleTripStatistics').attrib.get(value))
             elif value == 'speed':
-                data['averageSpeed'] = round(float(statistics_root.find('vehicleTripStatistics').attrib.get(value)) * 3.6, 3)
+                data['average_speed'] = round(float(statistics_root.find('vehicleTripStatistics').attrib.get(value)) * 3.6, 3)
 
         data['rear_end_collisions'] = rear_end_collisions
         data['lateral_collisions'] = total_collisions - rear_end_collisions

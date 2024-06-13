@@ -1,4 +1,4 @@
-index,number_of_cars,routeLength,averageSpeed,duration,waitingTime,timeLoss,departDelay,departDelayWaiting,totalTravelTime,totalDepartDelay,rear_end_collisions,lateral_collisions,emergency_brakes,algorithm,shield_distance,speed
+index,number_of_cars,routeLength,average_speed,duration,waitingTime,timeLoss,departDelay,departDelayWaiting,totalTravelTime,totalDepartDelay,rear_end_collisions,lateral_collisions,emergency_brakes,algorithm,shield_distance,desired_speed
 0,3353,390.46,36.036,49.4,9.17,34.7,3.15,-1.0,165651.0,10550.0,16,26,17,dqn,50,100
 1,3516,388.88,30.816,74.13,20.71,59.55,80.25,-1.0,260650.0,282150.0,48,92,56,dqn,50,100
 2,3520,388.36,31.608,70.95,18.69,56.45,42.39,-1.0,249753.0,149219.0,39,120,56,dqn,50,100
