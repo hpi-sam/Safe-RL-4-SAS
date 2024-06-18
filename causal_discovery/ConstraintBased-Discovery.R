@@ -46,9 +46,9 @@ Learning Bayesian Networks with the bnlearn R - https://arxiv.org/pdf/0908.3817.
 
 " 
 if (!require("pacman")) install.packages("pacman")
+pacman::p_load(here)
 here::i_am(paste("causal_discovery", "ConstraintBased-Discovery.R", sep = .Platform$file.sep))
 
-pacman::p_load(here)
 pacman::p_load(bnlearn)
 pacman::p_load(dplyr)
 
