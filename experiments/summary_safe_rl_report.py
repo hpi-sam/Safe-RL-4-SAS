@@ -11,7 +11,10 @@ for experiment in folders:
     experiment_data = []
 
     for statistics_file in statistics_files:
-        data = {'index': int(str(statistics_file.split('/')[-1].split('.')[0]))}
+        file_index = int(str(statistics_file.split('/')[-1].split('.')[0]))
+        if file_index >= 150:
+            continue
+        data = {'index': file_index}
 
         collision_file = statistics_file.replace('statistics.xml', 'collision.xml')
         collision_tree = ET.parse(collision_file)

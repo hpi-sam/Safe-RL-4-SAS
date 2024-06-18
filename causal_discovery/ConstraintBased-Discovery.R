@@ -4,7 +4,8 @@ Causal discovery using Constraint-Based Algorithms
 
 algorithm, #categorical[exogenous] 
 shield_distance [exogenous]
-speed [exogenous]
+desired_speed [exogenous]
+average_speed [endogenous]
 timeLoss [outcome]
 rear_end_collisions [outcome]
 lateral_collisions [outcome]
@@ -44,20 +45,24 @@ Learning Bayesian Networks with the bnlearn R - https://arxiv.org/pdf/0908.3817.
 #compare graphs produced by each of the methods. Check how sensitive they are to false discovery rate.
 
 " 
+if (!require("pacman")) install.packages("pacman")
+here::i_am(paste("causal_discovery", "ConstraintBased-Discovery.R", sep = .Platform$file.sep))
 
-library(bnlearn)
-library(dplyr)
+pacman::p_load(here)
+pacman::p_load(bnlearn)
+pacman::p_load(dplyr)
 
 #Load only Consent data. No data from tasks, only from demographics and qualification test
 
-path = "C://Users//Christian//Documents//GitHub//Safe-RL-4-SAS//causal_discovery//"
 file = "causal_discovery_new_data.csv"
+path = here("causal_discovery", file)
 
 #"causal_discovery_full_data.csv"
 
-df <- read.csv(paste0(path,file))
+df <- read.csv(path)
 df$shield_distance <- as.numeric(df$shield_distance)
-df$speed <- as.numeric(df$speed)
+df$desired_speed <- as.numeric(df$desired_speed)
+df$average_speed <- as.numeric(df$average_speed)
 df$timeLoss <- as.numeric(df$timeLoss)
 df$rear_end_collisions <- as.numeric(df$rear_end_collisions)
 df$lateral_collisions <- as.numeric(df$lateral_collisions)
@@ -70,7 +75,8 @@ df_selected <-
   dplyr::select(df,
                 algorithm, #categorical
                 shield_distance,
-                speed,
+                desired_speed,
+                average_speed,
                 timeLoss,
                 rear_end_collisions, 
                 lateral_collisions,
@@ -84,17 +90,17 @@ df_selected$algorithm <- as.factor(df_selected$algorithm)
 
 node.names <- colnames(df_selected)
 
-#shield and speed are not causally connected.
+#shield and desired_speed are not causally connected.
 blacklist_1 <- data.frame(from = c("shield_distance"), 
-                          to   = c("speed"))
+                          to   = c("desired_speed"))
 
-blacklist_2 <- data.frame(from   = c("speed"),
+blacklist_2 <- data.frame(from   = c("desired_speed"),
                           to = c("shield_distance"))
 
 #----------
 #timeLoss is not parent of any variable,it is an outcome.
  blacklist_3 <- data.frame(from = c("timeLoss"), 
-                           to   = c("algorithm","shield_distance","speed","rear_end_collisions","lateral_collisions","emergency_brakes","number_of_cars"))
+                           to   = c("algorithm","shield_distance","desired_speed", "average_speed","rear_end_collisions","lateral_collisions","emergency_brakes","number_of_cars"))
 #----------
 #collisions are independent from each other
 blacklist_4 <- data.frame(from = c("lateral_collisions"), 
@@ -103,7 +109,7 @@ blacklist_4 <- data.frame(from = c("lateral_collisions"),
 blacklist_5 <- data.frame(from   = c("rear_end_collisions"),
                            to = c("lateral_collisions"))
 #-----------
-#rear_end_collisions cannot cause shield_distance, speed, or timeLoss
+#rear_end_collisions cannot cause shield_distance, desired_speed, or timeLoss
  
 blacklist_6 <- data.frame(from   = c("rear_end_collisions"),
                            to = c("shield_distance"))
@@ -112,11 +118,11 @@ blacklist_7 <- data.frame(from = c("rear_end_collisions"),
                            to   = c("timeLoss"))
  
 blacklist_8 <- data.frame(from   = c("rear_end_collisions"),
-                            to = c("speed"))
+                            to = c("desired_speed"))
 #-----------
-#lateral_collisions cannot cause shield_distance, speed, or timeLoss
+#lateral_collisions cannot cause shield_distance, desired_speed, or timeLoss
 blacklist_9 <- data.frame(from = c("lateral_collisions"), 
-                           to   = c("speed"))
+                           to   = c("desired_speed"))
  
 blacklist_10 <- data.frame(from = c("lateral_collisions"), 
                            to   = c("shield_distance"))
@@ -144,7 +150,7 @@ blacklist_15 <- data.frame(from   = c("lateral_collisions"),
 
 #number_of_cars cannot cause change on other exogeneous variables
 blacklist_16 <- data.frame(from = c("number_of_cars"), 
-                          to   = c("speed"))
+                          to   = c("desired_speed"))
 
 blacklist_17 <- data.frame(from = c("number_of_cars"), 
                            to   = c("shield_distance"))
@@ -155,7 +161,7 @@ blacklist_18 <- data.frame(from = c("number_of_cars"),
 #----------
 
 #number_of_cars cannot de caused by any other covariate
-blacklist_19 <- data.frame(from   = c("algorithm","shield_distance","speed","rear_end_collisions","lateral_collisions","emergency_brakes"),
+blacklist_19 <- data.frame(from   = c("algorithm","shield_distance","desired_speed", "average_speed","rear_end_collisions","lateral_collisions","emergency_brakes"),
                            to = c("number_of_cars"))
 
 #----------
@@ -201,7 +207,8 @@ for (i in 1:length(algorithms)) {
   df_algo <- 
     dplyr::select(df_algo,
                   shield_distance,
-                  speed,
+                  desired_speed,
+                  average_speed,
                   timeLoss,
                   rear_end_collisions, 
                   lateral_collisions,
@@ -224,7 +231,8 @@ for (i in 1:length(algorithms)) {
   df_algo <- 
     dplyr::select(df_algo,
                   shield_distance,
-                  speed,
+                  desired_speed,
+                  average_speed,
                   timeLoss,
                   rear_end_collisions, 
                   lateral_collisions,
@@ -253,7 +261,8 @@ for (i in 1:length(algorithms)) {
   df_algo <- 
     dplyr::select(df_algo,
                   shield_distance,
-                  speed,
+                  desired_speed,
+                  average_speed,
                   timeLoss,
                   rear_end_collisions, 
                   lateral_collisions,
