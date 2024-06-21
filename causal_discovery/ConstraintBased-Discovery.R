@@ -45,6 +45,7 @@ Learning Bayesian Networks with the bnlearn R - https://arxiv.org/pdf/0908.3817.
 
 " 
 if (!require("pacman")) install.packages("pacman")
+pacman::p_load(here)
 
 source(here("causal_discovery", "util", "DataLoader.R"))
 df_selected <- loadCSV()
