@@ -51,7 +51,6 @@ source(here("causal_discovery", "util", "DataLoader.R"))
 df_selected <- loadCSV()
 blacklist_all <- loadBlacklist()
 
-pacman::p_load(here)
 here::i_am(paste("causal_discovery", "ConstraintBased-Discovery.R", sep = .Platform$file.sep))
 
 pacman::p_load(bnlearn)
@@ -79,7 +78,6 @@ blacklist_all <- blacklist_all[!(blacklist_all$to %in% c("algorithm") ),]
 
 #Run structure discovery for each algorithm
 algorithms = c("trpo", "a2c",  "dqn",  "ppo") 
-#algorithms = c("dqn")
 
 #PC-STABLE
 for (i in 1:length(algorithms)) {
@@ -93,17 +91,15 @@ for (i in 1:length(algorithms)) {
                   timeLoss,
                   rear_end_collisions, 
                   lateral_collisions,
-                  emergency_brakes,
-                  number_of_cars
+                  emergency_brakes
+                  #number_of_cars
     );
   bn <-pc.stable(df_algo,blacklist = blacklist_all)
   plot(bn,main=paste0("RL Algorithm: ",choice,", Discovery Method: pc-stable"))
   #graphviz.plot(bn,main=choice,shape="ellipse",layout = "circo");
 }
 
-"ANALYSIS: Analysis of results of the PC algorithm test duration seem relevant
-only for professional, undergrad, grad, hobbyist
-only in undegrad that test duration is affected by years_prog"
+"ANALYSIS: Analysis of results of the PC algorithm"
 
 #IAMB
 for (i in 1:length(algorithms)) {
@@ -117,8 +113,8 @@ for (i in 1:length(algorithms)) {
                   timeLoss,
                   rear_end_collisions, 
                   lateral_collisions,
-                  emergency_brakes,
-                  number_of_cars
+                  emergency_brakes
+                  #number_of_cars
     );
   bn <-iamb(df_algo,blacklist = blacklist_all)
   plot(bn,main=paste0("RL Algorithm: ",choice,", Discovery Method: iamb"))
@@ -126,11 +122,6 @@ for (i in 1:length(algorithms)) {
 }
 
 "ANALYSIS of results of the Tabu algorithm
-Test duration has not effect on adjusted_score for other and Programmer
-Test duration has no parents for Graduate and Professional
-Only in Hobbyists that test duration is a mediator for effect on adjusted_score
-Test duration has years_prog as parent in Hobbyist, Undergrad, 
-Programmer, and Other.
 "
 
 
