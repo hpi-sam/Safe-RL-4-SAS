@@ -31,8 +31,8 @@ loadCSV <- function(){
                   timeLoss,
                   rear_end_collisions, 
                   lateral_collisions,
-                  emergency_brakes,
-                  number_of_cars
+                  emergency_brakes
+#                  number_of_cars
     );
   
   df_selected$algorithm <- as.factor(df_selected$algorithm)
@@ -51,7 +51,7 @@ loadBlacklist <- function(){
   #----------
   #timeLoss is not parent of any variable,it is an outcome.
   blacklist_3 <- data.frame(from = c("timeLoss"), 
-                            to   = c("algorithm","shield_distance","desired_speed", "average_speed","rear_end_collisions","lateral_collisions","emergency_brakes","number_of_cars"))
+                            to   = c("algorithm","shield_distance","desired_speed", "average_speed","rear_end_collisions","lateral_collisions","emergency_brakes"))#,"number_of_cars"))
   #----------
   #collisions are independent from each other
   blacklist_4 <- data.frame(from = c("lateral_collisions"), 
@@ -65,9 +65,6 @@ loadBlacklist <- function(){
   blacklist_6 <- data.frame(from   = c("rear_end_collisions"),
                             to = c("shield_distance"))
   
-  blacklist_7 <- data.frame(from = c("rear_end_collisions"), 
-                            to   = c("timeLoss"))
-  
   blacklist_8 <- data.frame(from   = c("rear_end_collisions"),
                             to = c("desired_speed"))
   #-----------
@@ -77,9 +74,6 @@ loadBlacklist <- function(){
   
   blacklist_10 <- data.frame(from = c("lateral_collisions"), 
                              to   = c("shield_distance"))
-  
-  blacklist_11 <- data.frame(from = c("lateral_collisions"), 
-                             to   = c("timeLoss"))
   
   #-----------
   #similarly, timeLoss cannot cause the collision types
@@ -100,20 +94,20 @@ loadBlacklist <- function(){
   
   
   #number_of_cars cannot cause change on other exogeneous variables
-  blacklist_16 <- data.frame(from = c("number_of_cars"), 
-                             to   = c("desired_speed"))
+  #blacklist_16 <- data.frame(from = c("number_of_cars"), 
+  #                           to   = c("desired_speed"))
   
-  blacklist_17 <- data.frame(from = c("number_of_cars"), 
-                             to   = c("shield_distance"))
+  #blacklist_17 <- data.frame(from = c("number_of_cars"), 
+  #                           to   = c("shield_distance"))
   
-  blacklist_18 <- data.frame(from = c("number_of_cars"), 
-                             to   = c("algorithm"))
+  #blacklist_18 <- data.frame(from = c("number_of_cars"), 
+  #                           to   = c("algorithm"))
   
   #----------
   
   #number_of_cars cannot de caused by any other covariate
-  blacklist_19 <- data.frame(from   = c("algorithm","shield_distance","desired_speed", "average_speed","rear_end_collisions","lateral_collisions","emergency_brakes"),
-                             to = c("number_of_cars"))
+  #blacklist_19 <- data.frame(from   = c("algorithm","shield_distance","desired_speed", "average_speed","rear_end_collisions","lateral_collisions","emergency_brakes"),
+  #                           to = c("number_of_cars"))
   
   #----------
   
@@ -121,9 +115,9 @@ loadBlacklist <- function(){
   #Here we are dealing only with programmer demographic data.
   
   blacklist_all <- rbind(blacklist_1,blacklist_2,blacklist_3,blacklist_4,
-                         blacklist_5,blacklist_6,blacklist_7,blacklist_8,
-                         blacklist_9,blacklist_10,blacklist_11,blacklist_12,
-                         blacklist_13,blacklist_14,blacklist_15,blacklist_16,
-                         blacklist_17,blacklist_18,blacklist_19) 
+                         blacklist_5,blacklist_6,blacklist_8,
+                         blacklist_9,blacklist_10,blacklist_12,
+                         blacklist_13,blacklist_14,blacklist_15)
+  #blacklist_16,blacklist_17,blacklist_18,blacklist_19) 
   return(blacklist_all)
 }
